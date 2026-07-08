@@ -3,6 +3,8 @@ using PrimeraWebApp.Models;
 using MySql.Data.MySqlClient;
 using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PrimeraWebApp.Controllers
 {
@@ -17,12 +19,30 @@ namespace PrimeraWebApp.Controllers
 
         public IActionResult Index()
         {
+            var productos = new List<Dictionary<string, object>>();
+
             using (MySqlConnection conexion = new MySqlConnection(_connectionString))
             {
                 try
                 {
                     conexion.Open();
-                    ViewBag.MensajeConexion = "¡Conexion Web exitosa a MySQL usando appsettings.json!";
+
+                    using (var cmd = new MySqlCommand("SELECT * FROM productos", conexion))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var row = new Dictionary<string, object>();
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                var name = reader.GetName(i);
+                                row[name] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                            }
+                            productos.Add(row);
+                        }
+                    }
+
+                    ViewBag.MensajeConexion = "¡Conexión Web exitosa a MySQL usando appsettings.json!";
                     ViewBag.EstiloConexion = "success";
                 }
                 catch (MySqlException ex)
@@ -31,6 +51,9 @@ namespace PrimeraWebApp.Controllers
                     ViewBag.EstiloConexion = "danger";
                 }
             }
+
+            ViewBag.Products = productos;
+            ViewBag.Columns = productos.Any() ? productos[0].Keys.ToList() : new List<string>();
 
             return View();
         }

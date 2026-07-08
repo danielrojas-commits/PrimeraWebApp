@@ -13,5 +13,45 @@
             <p class="mb-0">@ViewBag.MensajeConexion</p>
         </div>
     }
-    
+</div>
+
+@{
+    var products = ViewBag.Products as List<Dictionary<string, object>>;
+    var columns = ViewBag.Columns as List<string> ?? new List<string>();
+}
+
+<div class="container mt-4">
+    <h3>Tabla: productos</h3>
+
+    @if (products != null && products.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        @foreach (var col in columns)
+                        {
+                            <th>@col</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in products)
+                    {
+                        <tr>
+                            @foreach (var col in columns)
+                            {
+                                <td>@(row.ContainsKey(col) && row[col] != null ? row[col].ToString() : "")</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">No hay registros en la tabla 'productos' o no se pudo leer la tabla.</div>
+    }
+
 </div>
