@@ -81,11 +81,12 @@ namespace PrimeraWebApp.Controllers
                     var exists = Convert.ToInt32(check.ExecuteScalar()) > 0;
                     if (exists)
                     {
-                        var estado = stock == 0 ? "cero" : "disponible";
+                        // Usar valores numéricos: 0 cuando stock==0, 1 cuando hay stock
+                        var estadoVal = stock == 0 ? 0 : 1;
                         var sql2 = $"UPDATE productos SET estado=@estado WHERE `{keyColumn}`=@id";
                         using (var cmd2 = new MySqlCommand(sql2, conexion))
                         {
-                            cmd2.Parameters.AddWithValue("@estado", estado);
+                            cmd2.Parameters.AddWithValue("@estado", estadoVal);
                             cmd2.Parameters.AddWithValue("@id", idValue);
                             cmd2.ExecuteNonQuery();
                         }
