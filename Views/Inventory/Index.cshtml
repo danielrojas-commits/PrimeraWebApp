@@ -36,13 +36,22 @@
                                 }
                                 else if (string.Equals(col, "stock", System.StringComparison.OrdinalIgnoreCase))
                                 {
-                                    // input form to update stock
-                                    <td class="text-end">
+                                    // input form to update stock. If stock == 0 show 'Sin stock'
+                                    var stockText = row.ContainsKey("stock") && row["stock"] != null ? row["stock"].ToString() : "0";
+                                    int stockVal;
+                                    int.TryParse(stockText, out stockVal);
+
+                                    <td class="text-end align-middle">
+                                        @if (stockVal == 0)
+                                        {
+                                            <span class="badge bg-danger me-2">Sin stock</span>
+                                        }
+
                                         <form asp-controller="Inventory" asp-action="Update" method="post" class="d-inline">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="keyColumn" value="@keyColumn" />
                                             <input type="hidden" name="idValue" value="@row[keyColumn]" />
-                                            <input type="number" name="stock" value="@(row.ContainsKey("stock") && row["stock"]!=null ? row["stock"].ToString() : "0")" class="form-control d-inline-block" style="width:100px;" />
+                                            <input type="number" name="stock" value="@stockVal" min="0" class="form-control d-inline-block" style="width:100px;" />
                                             <button type="submit" class="btn btn-sm btn-primary ms-2">Actualizar</button>
                                         </form>
                                     </td>

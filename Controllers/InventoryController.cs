@@ -74,6 +74,23 @@ namespace PrimeraWebApp.Controllers
                     cmd.Parameters.AddWithValue("@id", idValue);
                     cmd.ExecuteNonQuery();
                 }
+
+                // Si existe la columna 'estado', actualizar su valor según stock
+                using (var check = new MySqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='productos' AND COLUMN_NAME='estado'", conexion))
+                {
+                    var exists = Convert.ToInt32(check.ExecuteScalar()) > 0;
+                    if (exists)
+                    {
+                        var estado = stock == 0 ? "cero" : "disponible";
+                        var sql2 = $"UPDATE productos SET estado=@estado WHERE `{keyColumn}`=@id";
+                        using (var cmd2 = new MySqlCommand(sql2, conexion))
+                        {
+                            cmd2.Parameters.AddWithValue("@estado", estado);
+                            cmd2.Parameters.AddWithValue("@id", idValue);
+                            cmd2.ExecuteNonQuery();
+                        }
+                    }
+                }
             }
 
             return RedirectToAction("Index");
