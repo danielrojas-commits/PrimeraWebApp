@@ -1,0 +1,67 @@
+@{
+    ViewData["Title"] = "Inventario";
+}
+
+<div class="container mt-4">
+    <h2>Inventario</h2>
+
+    @{
+        var products = ViewBag.Products as List<Dictionary<string, object>>;
+        var columns = ViewBag.Columns as List<string> ?? new List<string>();
+        var keyColumn = ViewBag.KeyColumn as string ?? "id";
+    }
+
+    @if (products != null && products.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        @foreach (var col in columns)
+                        {
+                            <th>@col</th>
+                        }
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in products)
+                    {
+                        <tr>
+                            @foreach (var col in columns)
+                            {
+                                if (string.Equals(col, keyColumn, System.StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <td>@row[col]</td>
+                                }
+                                else if (string.Equals(col, "stock", System.StringComparison.OrdinalIgnoreCase))
+                                {
+                                    // input form to update stock
+                                    <td class="text-end">
+                                        <form asp-controller="Inventory" asp-action="Update" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="keyColumn" value="@keyColumn" />
+                                            <input type="hidden" name="idValue" value="@row[keyColumn]" />
+                                            <input type="number" name="stock" value="@(row.ContainsKey("stock") && row["stock"]!=null ? row["stock"].ToString() : "0")" class="form-control d-inline-block" style="width:100px;" />
+                                            <button type="submit" class="btn btn-sm btn-primary ms-2">Actualizar</button>
+                                        </form>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td>@(row[col]?.ToString() ?? "")</td>
+                                }
+                            }
+                            <td></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">No hay productos para mostrar.</div>
+    }
+
+</div>
