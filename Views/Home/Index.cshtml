@@ -41,7 +41,30 @@
                         <tr>
                             @foreach (var col in columns)
                             {
-                                <td>@(row.ContainsKey(col) && row[col] != null ? row[col].ToString() : "")</td>
+                                var cellValue = row.ContainsKey(col) && row[col] != null ? row[col] : null;
+                                if (cellValue == null)
+                                {
+                                    <td></td>
+                                }
+                                else if (string.Equals(col, "stock", System.StringComparison.OrdinalIgnoreCase))
+                                {
+                                    // Formatear stock como número y destacar valores bajos
+                                    int stockVal;
+                                    var stockText = cellValue.ToString();
+                                    if (int.TryParse(stockText, out stockVal))
+                                    {
+                                        var badgeClass = stockVal <= 5 ? "bg-danger" : "bg-success";
+                                        <td class="text-end"><span class="badge @badgeClass">@stockVal</span></td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-end">@stockText</td>
+                                    }
+                                }
+                                else
+                                {
+                                    <td>@cellValue.ToString()</td>
+                                }
                             }
                         </tr>
                     }
