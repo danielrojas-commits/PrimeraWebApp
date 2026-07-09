@@ -1,0 +1,35 @@
+@{
+    ViewData["Title"] = "Editar Usuario";
+    var trabajador = ViewBag.Worker as Dictionary<string, object>;
+}
+
+<div class="container mt-4">
+    <h2>Editar usuario</h2>
+
+    @using (Html.BeginForm("Edit", "Users", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value='@(trabajador.ContainsKey("id") ? trabajador["id"] : "")' />
+
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input type="text" name="nombre" id="nombre" class="form-control" value='@(trabajador.ContainsKey("nombre") ? trabajador["nombre"] : "")' disabled />
+            @Html.ValidationMessage("nombre", "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            <label for="apellido" class="form-label">Apellido</label>
+            <input type="text" name="apellido" id="apellido" class="form-control" value='@(trabajador.ContainsKey("apellido") ? trabajador["apellido"] : "")' disabled />
+            @Html.ValidationMessage("apellido", "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            <label for="correo" class="form-label">Correo</label>
+            <input type="email" name="correo" id="correo" class="form-control" value='@(trabajador.ContainsKey("correo") ? trabajador["correo"] : "")' />
+            @Html.ValidationMessage("correo", "", new { @class = "text-danger" })
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a asp-controller="Users" asp-action="Index" class="btn btn-secondary ms-2">Volver</a>
+    }
+</div>

@@ -1,0 +1,58 @@
+@{
+    ViewData["Title"] = "Usuarios";
+}
+
+<div class="container mt-4">
+    <h2>Usuarios (trabajadores)</h2>
+
+    <div class="mb-3">
+        <a asp-controller="Users" asp-action="Create" class="btn btn-success">Crear usuario</a>
+    </div>
+
+    @{
+        var workers = ViewBag.Workers as List<Dictionary<string, object>>;
+        var columns = ViewBag.Columns as List<string> ?? new List<string>();
+    }
+
+    @if (workers != null && workers.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        @foreach (var col in columns)
+                        {
+                            <th>@col</th>
+                        }
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in workers)
+                    {
+                        <tr>
+                            @foreach (var col in columns)
+                            {
+                                <td>@(row.ContainsKey(col) && row[col] != null ? row[col].ToString() : "")</td>
+                            }
+                            <td>
+                                <a asp-controller="Users" asp-action="Edit" asp-route-id="@row[columns[0]]" class="btn btn-sm btn-primary me-2">Editar</a>
+                                @using (Html.BeginForm("Delete", "Users", FormMethod.Post, new { onsubmit = "return confirm('¿Eliminar usuario?');", @class = "d-inline" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@row[columns[0]]" />
+                                    <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">No hay usuarios (trabajadores) para mostrar.</div>
+    }
+
+</div>

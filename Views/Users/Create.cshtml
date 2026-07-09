@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Crear Usuario";
+}
+
+<div class="container mt-4">
+    <h2>Crear usuario</h2>
+
+    @using (Html.BeginForm("Create", "Users", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input type="text" name="nombre" id="nombre" class="form-control" />
+            @Html.ValidationMessage("nombre", "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            <label for="apellido" class="form-label">Apellido</label>
+            <input type="text" name="apellido" id="apellido" class="form-control" />
+            @Html.ValidationMessage("apellido", "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            <label for="correo" class="form-label">Correo</label>
+            <input type="email" name="correo" id="correo" class="form-control" />
+            @Html.ValidationMessage("correo", "", new { @class = "text-danger" })
+        </div>
+
+        <button type="submit" class="btn btn-primary">Crear</button>
+        <a asp-controller="Users" asp-action="Index" class="btn btn-secondary ms-2">Volver</a>
+    }
+</div>

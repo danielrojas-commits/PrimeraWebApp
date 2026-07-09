@@ -1,0 +1,62 @@
+@{
+    ViewData["Title"] = "Crear Categoría";
+}
+
+<div class="container mt-4">
+    <h2>Crear categoría</h2>
+
+    @using (Html.BeginForm("CreateCategory", "Inventory", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input type="text" name="nombre" id="nombre" class="form-control" />
+            @Html.ValidationMessage("nombre", "", new { @class = "text-danger" })
+        </div>
+
+        <button type="submit" class="btn btn-primary">Crear</button>
+        <a asp-controller="Inventory" asp-action="Create" class="btn btn-secondary ms-2">Volver</a>
+    }
+
+    <hr />
+    <h3>Categorías existentes</h3>
+    @{
+        var categorias = ViewBag.Categories as List<Dictionary<string, object>> ?? new List<Dictionary<string, object>>();
+        var catKey = ViewBag.CatKeyColumn as string ?? "id";
+        var catLabel = ViewBag.CatLabelColumn as string ?? "nombre";
+    }
+
+    @if (categorias.Any())
+    {
+        <div class="table-responsive mt-3">
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>@catKey</th>
+                        <th>@catLabel</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in categorias)
+                    {
+                        <tr>
+                            <td>@(c.ContainsKey(catKey) ? c[catKey] : "")</td>
+                            <td>@(c.ContainsKey(catLabel) ? c[catLabel] : "")</td>
+                            <td>
+                                <a asp-controller="Inventory" asp-action="EditCategory" asp-route-id="@(c[catKey])" class="btn btn-sm btn-primary me-2">Editar</a>
+                                @using (Html.BeginForm("DeleteCategory", "Inventory", FormMethod.Post, new { onsubmit = "return confirm('¿Eliminar categoría?');", @class = "d-inline" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@(c[catKey])" />
+                                    <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

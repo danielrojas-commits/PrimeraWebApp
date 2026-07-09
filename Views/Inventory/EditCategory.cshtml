@@ -1,0 +1,23 @@
+@{
+    ViewData["Title"] = "Editar Categoría";
+    var categoria = ViewBag.Categoria as Dictionary<string, object>;
+}
+
+<div class="container mt-4">
+    <h2>Editar categoría</h2>
+
+    @using (Html.BeginForm("EditCategory", "Inventory", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value='@(categoria.ContainsKey("id") ? categoria["id"] : "")' />
+
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input type="text" name="nombre" id="nombre" class="form-control" value='@(categoria.ContainsKey("nombre") ? categoria["nombre"] : "")' />
+            @Html.ValidationMessage("nombre", "", new { @class = "text-danger" })
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a asp-controller="Inventory" asp-action="Create" class="btn btn-secondary ms-2">Volver</a>
+    }
+</div>

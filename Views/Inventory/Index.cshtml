@@ -5,6 +5,11 @@
 <div class="container mt-4">
     <h2>Inventario</h2>
 
+    <div class="mb-3">
+        <a asp-controller="Inventory" asp-action="Create" class="btn btn-success">Añadir producto</a>
+        <a asp-controller="Inventory" asp-action="Historial" class="btn btn-secondary ms-2">Historial</a>
+    </div>
+
     @{
         var products = ViewBag.Products as List<Dictionary<string, object>>;
         var columns = ViewBag.Columns as List<string> ?? new List<string>();
@@ -61,7 +66,15 @@
                                     <td>@(row[col]?.ToString() ?? "")</td>
                                 }
                             }
-                            <td></td>
+
+                            <td class="text-center align-middle">
+                                <form asp-controller="Inventory" asp-action="Delete" method="post" onsubmit="return confirm('¿Eliminar este producto? Esta acción no se puede deshacer.');" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="keyColumn" value="@keyColumn" />
+                                    <input type="hidden" name="idValue" value="@row[keyColumn]" />
+                                    <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                </form>
+                            </td>
                         </tr>
                     }
                 </tbody>
