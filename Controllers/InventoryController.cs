@@ -22,18 +22,100 @@ namespace PrimeraWebApp.Controllers
             using (var conexion = new MySqlConnection(_connectionString))
             {
                 conexion.Open();
-                using (var cmd = new MySqlCommand("SELECT * FROM productos", conexion))
-                using (var reader = cmd.ExecuteReader())
+
+                // Detectar columna de categoría en productos
+                var possibleProdCatCols = new[] { "categoria_id", "categ_id", "categoriaId", "categoria", "categ" };
+                string prodCatCol = null;
+                using (var check = new MySqlCommand("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='productos'", conexion))
+                using (var reader = check.ExecuteReader())
                 {
-                    while (reader.Read())
+                    var cols = new List<string>();
+                    while (reader.Read()) cols.Add(reader.GetString(0));
+                    prodCatCol = possibleProdCatCols.FirstOrDefault(c => cols.Any(x => string.Equals(x, c, System.StringComparison.OrdinalIgnoreCase)));
+                }
+
+                // Si existe columna de categoría y la tabla categ existe, realizar JOIN para obtener el nombre
+                bool joined = false;
+                if (!string.IsNullOrEmpty(prodCatCol))
+                {
+                    // Detectar columna clave de categ
+                    string catKey = null;
+                    using (var check2 = new MySqlCommand("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='categ'", conexion))
+                    using (var reader2 = check2.ExecuteReader())
                     {
-                        var row = new Dictionary<string, object>();
-                        for (int i = 0; i < reader.FieldCount; i++)
+                        var cols = new List<string>();
+                        while (reader2.Read()) cols.Add(reader2.GetString(0));
+                        if (cols.Any())
                         {
-                            var name = reader.GetName(i);
-                            row[name] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                            catKey = cols.FirstOrDefault(c => string.Equals(c, "id", System.StringComparison.OrdinalIgnoreCase))
+                                     ?? cols.FirstOrDefault(c => c.EndsWith("_id", System.StringComparison.OrdinalIgnoreCase))
+                                     ?? cols.FirstOrDefault(c => c.EndsWith("Id"))
+                                     ?? cols.First();
                         }
-                        productos.Add(row);
+                    }
+
+                    // Detectar etiqueta de categ (nombre)
+                    string catLabel = null;
+                    using (var cmdLabel = new MySqlCommand("SELECT * FROM categ LIMIT 1", conexion))
+                    using (var readerLabel = cmdLabel.ExecuteReader())
+                    {
+                        if (readerLabel.Read())
+                        {
+                            var firstCols = new List<string>();
+                            for (int i = 0; i < readerLabel.FieldCount; i++) firstCols.Add(readerLabel.GetName(i));
+                            catLabel = firstCols.FirstOrDefault(k => string.Equals(k, "nombre", System.StringComparison.OrdinalIgnoreCase))
+                                       ?? firstCols.FirstOrDefault(k => string.Equals(k, "name", System.StringComparison.OrdinalIgnoreCase))
+                                       ?? firstCols.FirstOrDefault(k => string.Equals(k, "descripcion", System.StringComparison.OrdinalIgnoreCase))
+                                       ?? firstCols.FirstOrDefault(k => k != catKey)
+                                       ?? catKey;
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(catKey) && !string.IsNullOrEmpty(catLabel))
+                    {
+                        // Intentar ejecutar la consulta JOIN adaptada al proyecto (selección explícita de columnas)
+                        try
+                        {
+                            // Selección usando JOIN dinámico para incluir el nombre de la categoría como 'nombre_categoria'
+                            var sql = $"SELECT p.*, c.`{catLabel}` AS nombre_categoria FROM productos p INNER JOIN categ c ON p.`{prodCatCol}` = c.`{catKey}`";
+                            using (var cmd = new MySqlCommand(sql, conexion))
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var row = new Dictionary<string, object>();
+                                    for (int i = 0; i < reader.FieldCount; i++)
+                                    {
+                                        var name = reader.GetName(i);
+                                        row[name] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                                    }
+                                    productos.Add(row);
+                                }
+                            }
+                            joined = true;
+                        }
+                        catch (MySql.Data.MySqlClient.MySqlException)
+                        {
+                            // Si la consulta falla (nombres de columnas distintos), no usar JOIN aquí; el flujo continuará y hará SELECT * más abajo
+                        }
+                    }
+                }
+
+                if (!joined)
+                {
+                    using (var cmd = new MySqlCommand("SELECT * FROM productos", conexion))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var row = new Dictionary<string, object>();
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                var name = reader.GetName(i);
+                                row[name] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                            }
+                            productos.Add(row);
+                        }
                     }
                 }
             }
@@ -128,8 +210,34 @@ namespace PrimeraWebApp.Controllers
                             ?? first.First();
             }
 
+            // Si la consulta devolvió 'categoria_nombre' (por JOIN), sustituir la columna id de categoría
+            if (productos.Any())
+            {
+                // detectar columna original de categoría en productos (si existe)
+                var possibleProdCatCols = new[] { "categoria_id", "categ_id", "categoriaId", "categoria", "categ" };
+                var prodCatKey = productos[0].Keys.FirstOrDefault(k => possibleProdCatCols.Any(p => string.Equals(p, k, System.StringComparison.OrdinalIgnoreCase)));
+
+                if (!string.IsNullOrEmpty(prodCatKey) && productos[0].ContainsKey("nombre_categoria"))
+                {
+                    foreach (var p in productos)
+                    {
+                        if (p.ContainsKey("nombre_categoria") && p["nombre_categoria"] != null)
+                        {
+                            // reemplazar valor id por el nombre de categoría
+                            p[prodCatKey] = p["nombre_categoria"];
+                        }
+                        // eliminar la columna auxiliar
+                        if (p.ContainsKey("nombre_categoria")) p.Remove("nombre_categoria");
+                    }
+                }
+            }
+
+            // Mantener las columnas tal cual vienen de la consulta.
+            // Si existe 'categoria_nom' en la fila, lo dejamos para que la vista muestre el nombre de categoría junto a la id_categoria.
+            var columnsList = productos.Any() ? productos[0].Keys.ToList() : new List<string>();
+
             ViewBag.Products = productos;
-            ViewBag.Columns = productos.Any() ? productos[0].Keys.ToList() : new List<string>();
+            ViewBag.Columns = columnsList;
             ViewBag.KeyColumn = keyColumn ?? "id";
 
             return View();
@@ -531,13 +639,36 @@ namespace PrimeraWebApp.Controllers
                     ModelState.AddModelError("categoriaId", "La tabla 'productos' no contiene una columna para almacenar la categoría. Añádela o contacte al administrador.");
                     return View();
                 }
-
-                // Construir INSERT adaptado: usar orden y nombres de parámetros claros
-                // Ejemplo adaptado de la línea solicitada: insertar nombre, stock y precio
-                string query;
-                if (!string.IsNullOrEmpty(prodCatCol))
+                // Detectar si la tabla productos tiene columna para almacenar el nombre de la categoría (categoria_nom)
+                bool hasCategoriaNom = false;
+                using (var checkCatNom = new MySqlCommand("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='productos' AND COLUMN_NAME='categoria_nom'", conexion))
                 {
-                    // Incluir columna de categoría si existe
+                    hasCategoriaNom = Convert.ToInt32(checkCatNom.ExecuteScalar()) > 0;
+                }
+
+                // Si existe la columna categoria_nom y se proporcionó categoriaId, obtener el nombre desde la tabla categ
+                string categoriaNomValue = null;
+                if (hasCategoriaNom && categoriaId.HasValue)
+                {
+                    using (var cmdGetCat = new MySqlCommand($"SELECT nombre FROM categ WHERE id=@id LIMIT 1", conexion))
+                    {
+                        cmdGetCat.Parameters.AddWithValue("@id", categoriaId.Value);
+                        var scalar = cmdGetCat.ExecuteScalar();
+                        if (scalar != null && scalar != System.DBNull.Value)
+                        {
+                            categoriaNomValue = scalar.ToString();
+                        }
+                    }
+                }
+
+                // Construir INSERT adaptado: incluir columna id de categoría y opcionalmente categoria_nom
+                string query;
+                if (hasCategoriaNom && !string.IsNullOrEmpty(prodCatCol))
+                {
+                    query = $"INSERT INTO productos (nombre, stock, precio, `{prodCatCol}`, `categoria_nom`) VALUES (@nombre, @stock, @precio, @categoria, @categoria_nom)";
+                }
+                else if (!string.IsNullOrEmpty(prodCatCol))
+                {
                     query = $"INSERT INTO productos (nombre, stock, precio, `{prodCatCol}`) VALUES (@nombre, @stock, @precio, @categoria)";
                 }
                 else
@@ -553,6 +684,10 @@ namespace PrimeraWebApp.Controllers
                     if (!string.IsNullOrEmpty(prodCatCol))
                     {
                         cmd.Parameters.AddWithValue("@categoria", categoriaId.Value);
+                    }
+                    if (hasCategoriaNom)
+                    {
+                        cmd.Parameters.AddWithValue("@categoria_nom", categoriaNomValue ?? string.Empty);
                     }
                     cmd.ExecuteNonQuery();
                 }
