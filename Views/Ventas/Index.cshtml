@@ -1,0 +1,59 @@
+@model List<PrimeraWebApp.Models.Venta>
+@{
+    ViewData["Title"] = "Ventas";
+}
+
+<div class="container mt-4">
+    <h2>Listado de Ventas</h2>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Ingresos (estimado)</h5>
+                    <p class="card-text display-6">
+                        @{
+                            var total = ViewBag.TotalGanancias ?? 0m;
+                        }
+                        @String.Format("{0:C}", total)
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Id venta</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Trabajador</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Id_venta</td>
+                            <td>@(item.Fecha == DateTime.MinValue ? "" : item.Fecha.ToString("g"))</td>
+                            <td>@item.Total</td>
+                            <td>@(item.Trabajador != null ? (item.Trabajador.Nombre + " " + item.Trabajador.Apellido) : "Sin asignar")</td>
+                            <td>
+                                <a asp-controller="Inventory" asp-action="SaleReceipt" asp-route-id="@item.Id_venta" class="btn btn-sm btn-primary">Ver</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">No hay ventas registradas.</div>
+    }
+</div>

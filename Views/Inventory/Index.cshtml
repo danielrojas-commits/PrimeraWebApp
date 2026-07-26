@@ -19,8 +19,8 @@
     @if (products != null && products.Count > 0)
     {
         <div class="table-responsive">
-            <table class="table table-striped table-bordered">
-                <thead class="table-dark">
+            <table class="table table-striped table-bordered table-inventory">
+                <thead class="table-inventory-header">
                     <tr>
                         @foreach (var col in columns)
                         {
@@ -41,7 +41,7 @@
                                 }
                                 else if (string.Equals(col, "stock", System.StringComparison.OrdinalIgnoreCase))
                                 {
-                                    // input form to update stock. If stock == 0 show 'Sin stock'
+                                    // input form to update stock only. If stock == 0 show 'Sin stock'
                                     var stockText = row.ContainsKey("stock") && row["stock"] != null ? row["stock"].ToString() : "0";
                                     int stockVal;
                                     int.TryParse(stockText, out stockVal);
@@ -57,6 +57,26 @@
                                             <input type="hidden" name="keyColumn" value="@keyColumn" />
                                             <input type="hidden" name="idValue" value="@row[keyColumn]" />
                                             <input type="number" name="stock" value="@stockVal" min="0" class="form-control d-inline-block" style="width:100px;" />
+                                            <button type="submit" class="btn btn-sm btn-primary ms-2">Actualizar</button>
+                                        </form>
+                                    </td>
+                                }
+                                else if (string.Equals(col, "precio", System.StringComparison.OrdinalIgnoreCase) || string.Equals(col, "price", System.StringComparison.OrdinalIgnoreCase))
+                                {
+                                    // input form to update precio only. Include hidden stock so controller has required value.
+                                    var priceText = row.ContainsKey("precio") && row["precio"] != null ? row["precio"].ToString() : (row.ContainsKey("price") && row["price"] != null ? row["price"].ToString() : "0");
+                                    decimal priceVal = 0;
+                                    decimal.TryParse(priceText, out priceVal);
+
+                                    var stockForHidden = row.ContainsKey("stock") && row["stock"] != null ? row["stock"].ToString() : "0";
+
+                                    <td class="text-center align-middle">
+                                        <form asp-controller="Inventory" asp-action="Update" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="keyColumn" value="@keyColumn" />
+                                            <input type="hidden" name="idValue" value="@row[keyColumn]" />
+                                            <input type="hidden" name="stock" value="@stockForHidden" />
+                                            <input type="number" step="0.01" name="precio" value="@priceVal" class="form-control d-inline-block" style="width:120px;" />
                                             <button type="submit" class="btn btn-sm btn-primary ms-2">Actualizar</button>
                                         </form>
                                     </td>

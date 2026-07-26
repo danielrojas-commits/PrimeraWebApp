@@ -1,0 +1,47 @@
+@{
+    ViewData["Title"] = "Recibo de venta";
+    var ventaId = ViewBag.VentaId as long? ?? 0;
+    var header = ViewBag.Header as Dictionary<string, object>;
+    var items = ViewBag.Items as List<Dictionary<string, object>> ?? new List<Dictionary<string, object>>();
+}
+
+<div class="container mt-4">
+    <h2>Recibo de venta - @ventaId</h2>
+
+    @if (header != null)
+    {
+        <div class="mb-3">
+            <strong>Fecha:</strong> @(header.ContainsKey("fecha") ? header["fecha"] : "-")<br />
+            <strong>Total:</strong> @(header.ContainsKey("total") ? header["total"] : "-")
+        </div>
+    }
+
+    @if (items.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-registros">
+                <thead class="table-registros-header">
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio unitario</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var it in items)
+                    {
+                        <tr>
+                            <td>@(it.ContainsKey("nombre") ? it["nombre"] : (it.ContainsKey("producto_id") ? it["producto_id"] : ""))</td>
+                            <td>@(it.ContainsKey("cantidad") ? it["cantidad"] : (it.ContainsKey("qty") ? it["qty"] : ""))</td>
+                            <td>@(it.ContainsKey("precio_unitario") ? it["precio_unitario"] : (it.ContainsKey("precio") ? it["precio"] : ""))</td>
+                            <td>@(it.ContainsKey("total") ? it["total"] : (it.ContainsKey("importe") ? it["importe"] : ""))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <a asp-controller="Inventory" asp-action="RegisterSale" class="btn btn-secondary">Volver</a>
+</div>

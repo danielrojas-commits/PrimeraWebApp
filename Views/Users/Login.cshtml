@@ -1,0 +1,32 @@
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="container mt-4">
+    <h2>Iniciar sesión</h2>
+
+    @using (Html.BeginForm("Login", "Users", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label for="correo" class="form-label">Correo</label>
+            <input type="email" name="correo" id="correo" class="form-control" />
+            @Html.ValidationMessage("correo", "", new { @class = "text-danger" })
+        </div>
+
+        <div class="mb-3">
+            <label for="clave" class="form-label">Contraseña</label>
+            <input type="password" name="clave" id="clave" class="form-control" />
+            @Html.ValidationMessage("clave", "", new { @class = "text-danger" })
+        </div>
+
+        <button type="submit" class="btn btn-primary">Entrar</button>
+        <a asp-controller="Users" asp-action="Create" class="btn btn-link ms-2">Crear cuenta</a>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success mt-3">@TempData["Success"]</div>
+    }
+</div>

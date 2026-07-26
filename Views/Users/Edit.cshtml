@@ -1,6 +1,7 @@
 @{
     ViewData["Title"] = "Editar Usuario";
     var trabajador = ViewBag.Worker as Dictionary<string, object>;
+    var keyCol = ViewBag.KeyColumn as string ?? "id";
 }
 
 <div class="container mt-4">
@@ -9,7 +10,7 @@
     @using (Html.BeginForm("Edit", "Users", FormMethod.Post))
     {
         @Html.AntiForgeryToken()
-        <input type="hidden" name="id" value='@(trabajador.ContainsKey("id") ? trabajador["id"] : "")' />
+        <input type="hidden" name="id" value='@(trabajador != null && trabajador.ContainsKey(keyCol) ? trabajador[keyCol] : "")' />
 
         <div class="mb-3">
             <label for="nombre" class="form-label">Nombre</label>
@@ -29,7 +30,26 @@
             @Html.ValidationMessage("correo", "", new { @class = "text-danger" })
         </div>
 
+        <div class="mb-3 form-check">
+            @{ 
+                var adminVal = "0";
+                if (trabajador.ContainsKey("admin") && trabajador["admin"] != null) adminVal = trabajador["admin"].ToString();
+                bool isAdmin = adminVal == "1" || string.Equals(adminVal, "true", StringComparison.OrdinalIgnoreCase) || adminVal == "True";
+            }
+            <input type="checkbox" name="admin" id="admin" class="form-check-input" value="1" @(isAdmin ? "checked" : "") />
+            <label class="form-check-label" for="admin">Administrador</label>
+        </div>
+
         <button type="submit" class="btn btn-primary">Guardar</button>
         <a asp-controller="Users" asp-action="Index" class="btn btn-secondary ms-2">Volver</a>
+        @if ((ViewBag.IsAdmin as bool?) == true)
+        {
+            @using (Html.BeginForm("Delete", "Users", FormMethod.Post, new { onsubmit = "return confirm('¿Eliminar usuario?');", @class = "d-inline ms-2" }))
+            {
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value='@(trabajador != null && trabajador.ContainsKey(keyCol) ? trabajador[keyCol] : "")' />
+                <button type="submit" class="btn btn-danger ms-2">Eliminar usuario</button>
+            }
+        }
     }
 </div>

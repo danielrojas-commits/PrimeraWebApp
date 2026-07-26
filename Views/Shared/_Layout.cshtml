@@ -1,9 +1,9 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - PrimeraWebApp</title>
+    <title>@ViewData["Title"] - MercadoCentral</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -11,34 +11,78 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">PrimeraWebApp</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                <a class="navbar-brand fw-bold d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="me-2">MercadoCentral</span>
+                    <small class="text-light opacity-75">Ventas · Inventario · Gestión</small>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Dashboard</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link" asp-controller="Inventory" asp-action="Index">Inventario</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Ventas" asp-action="Index">Ganancias</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Inventory" asp-action="RegisterSale">Registrar venta</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Inventory" asp-action="Sales">Ventas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Users" asp-action="Index">Usuarios</a>
                         </li>
                     </ul>
-                    <div class="d-flex align-items-center ms-auto">
-                        <a class="nav-link text-dark" asp-controller="Inventory" asp-action="Index">Inventario</a>
-                        <a class="nav-link text-dark" asp-controller="Users" asp-action="Index">Usuarios</a>
+                    <form class="d-flex me-3" role="search" method="get" asp-controller="Inventory" asp-action="Index">
+                        <input class="form-control form-control-sm me-2" type="search" placeholder="Buscar producto" aria-label="Buscar" name="q">
+                        <button class="btn btn-outline-light btn-sm" type="submit">Buscar</button>
+                    </form>
+                    <div class="dropdown">
+                        <a class="btn btn-light btn-sm dropdown-toggle" href="#" role="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                            @{
+                                var userName = "Admin";
+                                try
+                                {
+                                    if (Context.Request.Cookies.ContainsKey("user_name") && !string.IsNullOrEmpty(Context.Request.Cookies["user_name"])) userName = Context.Request.Cookies["user_name"];
+                                    else if (Context.Request.Cookies.ContainsKey("user_email") && !string.IsNullOrEmpty(Context.Request.Cookies["user_email"])) userName = Context.Request.Cookies["user_email"];
+                                }
+                                catch { }
+                            }
+                            @userName
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                            <li><a class="dropdown-item" asp-controller="Users" asp-action="Index">Usuarios</a></li>
+                            <li><a class="dropdown-item" asp-controller="Users" asp-action="Create">Nuevo usuario</a></li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li>
+                                <form asp-controller="Users" asp-action="Logout" method="post" class="m-0">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="dropdown-item btn btn-link p-0 m-0 text-start">Cerrar sesión</button>
+                                </form>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+
+    <div class="container-fluid">
+        <div class="row">
+            <main class="col-12 py-4">
+                @RenderBody()
+            </main>
+        </div>
     </div>
 
     <footer class="border-top footer text-muted">

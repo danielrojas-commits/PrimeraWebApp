@@ -21,6 +21,94 @@ body {
   margin-bottom: 60px;
 }
 
+/* Tema Mercado: colores y estilos generales */
+:root{
+  --mc-primary: #0b3d91; /* azul profesional */
+  --mc-accent: #c79f2c; /* dorado suave */
+  --mc-muted: #6c757d; /* gris neutro */
+  --mc-bg: #f4f6f8; /* fondo suave */
+}
+
+body{
+  background-color: var(--mc-bg);
+  color: #1f2d3d;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+.navbar-brand{ letter-spacing: 0.5px; }
+
+.sidebar{ min-height: calc(100vh - 70px); }
+
+.card-metric{
+  border-left: 4px solid var(--mc-primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Tarjetas KPI */
+.card-metric .kpi-number{ font-family: "Segoe UI", Roboto, Arial; }
+.card-metric{ border-radius: 8px; border-left-width:6px; }
+.card-metric{ border-left-color: var(--mc-primary); }
+
+/* Mejora visual de tablas */
+.table thead th{ background: rgba(0,0,0,0.04); }
+.table tbody tr:hover{ background: rgba(11,61,145,0.03); }
+
+/* Estilos para la tabla de inventario en tonos de gris */
+.table-inventory{ border-color: #d1d1d1; }
+.table-inventory thead.table-inventory-header{
+  background: linear-gradient(180deg,#f1f1f1,#e9e9e9);
+  color: #343a40;
+}
+.table-inventory thead.table-inventory-header th{
+  border-bottom: 2px solid #dcdcdc;
+}
+.table-inventory tbody tr{ background: #ffffff; }
+.table-inventory tbody tr:nth-child(even){ background: #f7f7f7; }
+.table-inventory tbody tr:hover{ background: #eaeaea; }
+.table-inventory td, .table-inventory th{ border-color: #e0e0e0; color: #333; }
+
+/* Estilos para la tabla de registros en tonos de gris */
+.table-registros{ border-color: #cfcfcf; }
+.table-registros thead.table-registros-header{
+  background: linear-gradient(180deg,#f6f6f6,#ececec);
+  color: #222;
+}
+.table-registros thead.table-registros-header th{
+  border-bottom: 2px solid #dedede;
+}
+.table-registros tbody tr{ background: #ffffff; }
+.table-registros tbody tr:nth-child(even){ background: #f5f5f5; }
+.table-registros tbody tr:hover{ background: #eaeaea; }
+.table-registros td, .table-registros th{ border-color: #e0e0e0; color: #333; }
+
+
+/* Ajuste para botones/acciones dentro de la tabla para mantener la paleta gris */
+/* Mantener colores originales de Bootstrap para los botones dentro de la tabla */
+
+.navbar-dark.bg-success{ background: linear-gradient(90deg, #07336b, #0b3d91); }
+.navbar-dark .nav-link{ color: rgba(255,255,255,0.9); }
+.navbar-dark .nav-link:hover{ color: #fff; }
+.navbar-dark .navbar-brand small{ font-size: .7rem; }
+
+.footer{ padding: 18px 0; background: #fff; }
+
+.hero-banner{ background: linear-gradient(90deg, rgba(11,61,145,0.06), rgba(199,159,44,0.02)); border-radius: 8px; padding: 18px; }
+
+.table thead th{ background: rgba(0,0,0,0.06); }
+
+.badge-stock-low{ background:#dc3545; color:white; }
+.badge-stock-ok{ background:#198754; color:white; }
+
+.hero-banner{
+  background: linear-gradient(90deg, rgba(25,135,84,0.08), rgba(255,193,7,0.04));
+  border-radius: 8px;
+  padding: 18px;
+}
+
+/* Small helpers */
+.kpi-number{ font-size: 1.6rem; font-weight:700; }
+.kpi-label{ color: #6c757d; font-size: .9rem; }
+
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);
   text-align: end;

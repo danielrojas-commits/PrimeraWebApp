@@ -12,13 +12,14 @@
     @{
         var workers = ViewBag.Workers as List<Dictionary<string, object>>;
         var columns = ViewBag.Columns as List<string> ?? new List<string>();
+        var isAdmin = (ViewBag.IsAdmin as bool?) ?? false;
     }
 
     @if (workers != null && workers.Count > 0)
     {
         <div class="table-responsive">
-            <table class="table table-striped table-bordered">
-                <thead class="table-dark">
+            <table class="table table-striped table-bordered table-registros">
+                <thead class="table-registros-header">
                     <tr>
                         @foreach (var col in columns)
                         {
@@ -36,12 +37,19 @@
                                 <td>@(row.ContainsKey(col) && row[col] != null ? row[col].ToString() : "")</td>
                             }
                             <td>
-                                <a asp-controller="Users" asp-action="Edit" asp-route-id="@row[columns[0]]" class="btn btn-sm btn-primary me-2">Editar</a>
-                                @using (Html.BeginForm("Delete", "Users", FormMethod.Post, new { onsubmit = "return confirm('¿Eliminar usuario?');", @class = "d-inline" }))
+                                @if (isAdmin)
                                 {
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@row[columns[0]]" />
-                                    <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                    <a asp-controller="Users" asp-action="Edit" asp-route-id="@row[columns[0]]" class="btn btn-sm btn-primary me-2">Editar</a>
+                                    @using (Html.BeginForm("Delete", "Users", FormMethod.Post, new { onsubmit = "return confirm('¿Eliminar usuario?');", @class = "d-inline" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@row[columns[0]]" />
+                                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">sin permisos</span>
                                 }
                             </td>
                         </tr>
