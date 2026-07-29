@@ -9,12 +9,19 @@ html {
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--mc-primary);
 }
 
 html {
   position: relative;
   min-height: 100%;
+  /* Fondo global aplicado al elemento html para evitar que contenedores con fondo blanco lo tapen. */
+  /* Usar Fondo.png ubicado en wwwroot/Fondo.png */
+  background-image: url('/Fondo.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 body {
@@ -23,17 +30,21 @@ body {
 
 /* Tema Mercado: colores y estilos generales */
 :root{
-  --mc-primary: #0b3d91; /* azul profesional */
-  --mc-accent: #c79f2c; /* dorado suave */
+  /* Colores corporativos adaptados al fondo (verde fuerte) */
+  --mc-primary: #20622f; /* verde fuerte */
+  --mc-primary-contrast: #ffffff;
+  --mc-accent: #9dbb5f; /* verde claro / acento */
   --mc-muted: #6c757d; /* gris neutro */
   --mc-bg: #f4f6f8; /* fondo suave */
+  /* Superficies translucidas para distinguir elementos del fondo */
+  --surface: rgba(255,255,255,0.70); /* menos opaco, deja ver más el fondo */
+  --surface-strong: rgba(255,255,255,0.85); /* para componentes importantes (cards) */
+  --surface-muted: rgba(255,255,255,0.78);
+  --surface-low: rgba(255,255,255,0.60); /* para filas de tabla */
 }
 
-body{
-  background-color: var(--mc-bg);
-  color: #1f2d3d;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-}
+/* Nota: el fondo real se aplica en html { background-image: url('../images/fondo.png'); }
+   Eliminamos propiedades duplicadas en body para evitar conflictos. */
 
 .navbar-brand{ letter-spacing: 0.5px; }
 
@@ -41,7 +52,9 @@ body{
 
 .card-metric{
   border-left: 4px solid var(--mc-primary);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  background-color: var(--surface-strong);
+  border-radius: 8px;
 }
 
 /* Tarjetas KPI */
@@ -49,9 +62,53 @@ body{
 .card-metric{ border-radius: 8px; border-left-width:6px; }
 .card-metric{ border-left-color: var(--mc-primary); }
 
+/* Superficie principal: contenedor del body donde se renderiza el contenido */
+main{
+  background-color: transparent; /* dejar main transparente para que se vea mejor el fondo debajo */
+  box-shadow: none;
+  border-radius: 0;
+}
+
+/* Botones: usar verde fuerte como primario y variantes outline */
+.btn-primary {
+  background-color: var(--mc-primary) !important;
+  border-color: var(--mc-primary) !important;
+  color: var(--mc-primary-contrast) !important;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background-color: color-mix(in srgb, var(--mc-primary) 85%, black 15%) !important;
+  border-color: color-mix(in srgb, var(--mc-primary) 85%, black 15%) !important;
+}
+.btn-outline-primary {
+  color: var(--mc-primary);
+  border-color: var(--mc-primary);
+}
+.btn-outline-primary:hover {
+  background-color: rgba(32,98,47,0.08);
+  color: var(--mc-primary-contrast);
+}
+
 /* Mejora visual de tablas */
-.table thead th{ background: rgba(0,0,0,0.04); }
-.table tbody tr:hover{ background: rgba(11,61,145,0.03); }
+
+/* Encabezados: colores sólidos para buena legibilidad */
+.table thead th{
+  background: linear-gradient(180deg, var(--mc-primary), color-mix(in srgb, var(--mc-primary) 85%, black 15%));
+  color: var(--mc-primary-contrast);
+}
+.table tbody tr:hover{ background: rgba(157,187,95,0.06); }
+
+/* Filas y celdas: usar superficies translucidas para ver el fondo pero mantener legibilidad */
+.table tbody tr{ background-color: var(--surface-low); }
+.table tbody tr:nth-child(even){ background-color: rgba(255,255,255,0.64); }
+.table td, .table th{ background-color: transparent; }
+
+/* Específico para tablas de inventario: encabezado con acento verde */
+.table-inventory thead.table-inventory-header{
+  background: linear-gradient(180deg, rgba(32,98,47,0.14), rgba(157,187,95,0.06));
+  color: var(--mc-primary-contrast);
+}
+.table-inventory tbody tr:nth-child(even){ background: rgba(250,255,250,0.7); }
+.table-inventory td, .table-inventory th{ border-color: rgba(32,98,47,0.08); }
 
 /* Estilos para la tabla de inventario en tonos de gris */
 .table-inventory{ border-color: #d1d1d1; }
@@ -62,10 +119,10 @@ body{
 .table-inventory thead.table-inventory-header th{
   border-bottom: 2px solid #dcdcdc;
 }
-.table-inventory tbody tr{ background: #ffffff; }
-.table-inventory tbody tr:nth-child(even){ background: #f7f7f7; }
-.table-inventory tbody tr:hover{ background: #eaeaea; }
-.table-inventory td, .table-inventory th{ border-color: #e0e0e0; color: #333; }
+.table-inventory tbody tr{ background-color: rgba(255,255,255,0.86); }
+.table-inventory tbody tr:nth-child(even){ background-color: rgba(255,255,255,0.80); }
+.table-inventory tbody tr:hover{ background-color: rgba(157,187,95,0.06); }
+.table-inventory td, .table-inventory th{ border-color: rgba(32,98,47,0.08); color: #333; }
 
 /* Estilos para la tabla de registros en tonos de gris */
 .table-registros{ border-color: #cfcfcf; }
@@ -76,34 +133,40 @@ body{
 .table-registros thead.table-registros-header th{
   border-bottom: 2px solid #dedede;
 }
-.table-registros tbody tr{ background: #ffffff; }
-.table-registros tbody tr:nth-child(even){ background: #f5f5f5; }
-.table-registros tbody tr:hover{ background: #eaeaea; }
-.table-registros td, .table-registros th{ border-color: #e0e0e0; color: #333; }
+.table-registros tbody tr{ background-color: rgba(255,255,255,0.86); }
+.table-registros tbody tr:nth-child(even){ background-color: rgba(255,255,255,0.80); }
+.table-registros tbody tr:hover{ background-color: rgba(157,187,95,0.06); }
+.table-registros td, .table-registros th{ border-color: rgba(32,98,47,0.08); color: #333; }
 
 
 /* Ajuste para botones/acciones dentro de la tabla para mantener la paleta gris */
 /* Mantener colores originales de Bootstrap para los botones dentro de la tabla */
 
-.navbar-dark.bg-success{ background: linear-gradient(90deg, #07336b, #0b3d91); }
-.navbar-dark .nav-link{ color: rgba(255,255,255,0.9); }
+.navbar-dark.bg-success{ background: linear-gradient(90deg, #164e26, var(--mc-primary)); }
+.navbar-dark .nav-link{ color: rgba(255,255,255,0.95); }
 .navbar-dark .nav-link:hover{ color: #fff; }
 .navbar-dark .navbar-brand small{ font-size: .7rem; }
 
-.footer{ padding: 18px 0; background: #fff; }
+.footer{ padding: 18px 0; background: var(--surface-strong); box-shadow: 0 -4px 12px rgba(0,0,0,0.04); }
 
 .hero-banner{ background: linear-gradient(90deg, rgba(11,61,145,0.06), rgba(199,159,44,0.02)); border-radius: 8px; padding: 18px; }
 
 .table thead th{ background: rgba(0,0,0,0.06); }
 
 .badge-stock-low{ background:#dc3545; color:white; }
-.badge-stock-ok{ background:#198754; color:white; }
+.badge-stock-ok{ background: var(--mc-primary); color: var(--mc-primary-contrast); }
 
 .hero-banner{
-  background: linear-gradient(90deg, rgba(25,135,84,0.08), rgba(255,193,7,0.04));
+  background: linear-gradient(90deg, rgba(157,187,95,0.10), rgba(255,255,255,0.02));
   border-radius: 8px;
   padding: 18px;
 }
+
+/* Estilos para gráficos: clases reutilizables. Si usas Chart.js, aplica estos colores en las opciones del gráfico. */
+.chart-fill-1{ background-color: rgba(32,98,47,0.85) !important; }
+.chart-stroke-1{ border-color: rgba(32,98,47,0.95) !important; }
+.chart-fill-2{ background-color: rgba(157,187,95,0.85) !important; }
+.chart-stroke-2{ border-color: rgba(157,187,95,0.95) !important; }
 
 /* Small helpers */
 .kpi-number{ font-size: 1.6rem; font-weight:700; }

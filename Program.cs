@@ -37,15 +37,11 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
 }
 
-// Middleware de autenticación DESACTIVADO temporalmente.
-// Para reactivar, restaura el bloque de middleware que comprueba la cookie "user_email"
-// y redirige a /Users/Login. Actualmente todas las rutas son accesibles sin inicio de sesión.
-// Middleware simple de autenticación por cookie
 app.Use(async (context, next) =>
 {
     // Rutas públicas que no requieren autenticación
     var path = context.Request.Path.Value ?? string.Empty;
-    var publicPrefixes = new[] { "/users/login", "/users/create", "/users/testbcrypt", "/users/testtrabajadores", "/lib/", "/css/", "/js/", "/favicon.ico", "/home/error", "/api/" };
+    var publicPrefixes = new[] { "/users/login", "/users/create", "/users/testbcrypt", "/users/testtrabajadores", "/lib/", "/css/", "/js/", "/images/", "/img/", "/favicon.ico", "/home/error", "/api/" };
     // No considerar la raíz ("/") como pública: así la página principal pedirá login si no hay cookie
     bool isPublic = publicPrefixes.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
@@ -65,6 +61,9 @@ app.Use(async (context, next) =>
 
     await next();
 });
+// Servir archivos estáticos desde wwwroot (imágenes, CSS, JS)
+app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseAuthorization();
