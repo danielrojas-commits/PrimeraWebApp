@@ -5,6 +5,15 @@
 <div class="container mt-4">
     <h2>Crear categoría</h2>
 
+    @if (TempData["CategoryError"] != null)
+    {
+        <div class="alert alert-danger mt-3">@TempData["CategoryError"]</div>
+    }
+    else if (TempData["CategoryMessage"] != null)
+    {
+        <div class="alert alert-success mt-3">@TempData["CategoryMessage"]</div>
+    }
+
     @using (Html.BeginForm("CreateCategory", "Inventory", FormMethod.Post))
     {
         @Html.AntiForgeryToken()

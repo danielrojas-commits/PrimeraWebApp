@@ -152,6 +152,12 @@ main{
 .hero-banner{ background: linear-gradient(90deg, rgba(11,61,145,0.06), rgba(199,159,44,0.02)); border-radius: 8px; padding: 18px; }
 
 .table thead th{ background: rgba(0,0,0,0.06); }
+/* Forzar encabezado negro en todas las tablas del proyecto */
+table thead th, .table thead th, thead th {
+  background-color: #000 !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
 
 .badge-stock-low{ background:#dc3545; color:white; }
 .badge-stock-ok{ background: var(--mc-primary); color: var(--mc-primary-contrast); }

@@ -1334,7 +1334,22 @@ namespace PrimeraWebApp.Controllers
             using (var conexion = new MySqlConnection(_connectionString))
             {
                 conexion.Open();
-                using (var cmd = new MySqlCommand("SELECT * FROM categ WHERE id=@id LIMIT 1", conexion))
+
+                // Detectar la columna clave de la tabla 'categ' (puede no llamarse 'id')
+                var catKey = "id";
+                using (var vc = new MySqlCommand("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='categ'", conexion))
+                using (var vr = vc.ExecuteReader())
+                {
+                    var cols = new List<string>();
+                    while (vr.Read()) cols.Add(vr.GetString(0));
+                    catKey = cols.FirstOrDefault(c => string.Equals(c, "id", System.StringComparison.OrdinalIgnoreCase))
+                             ?? cols.FirstOrDefault(c => c.EndsWith("_id", System.StringComparison.OrdinalIgnoreCase))
+                             ?? cols.FirstOrDefault(c => c.EndsWith("Id"))
+                             ?? cols.FirstOrDefault()
+                             ?? "id";
+                }
+
+                using (var cmd = new MySqlCommand($"SELECT * FROM categ WHERE `{catKey}`=@id LIMIT 1", conexion))
                 {
                     cmd.Parameters.AddWithValue("@id", id);
                     using (var reader = cmd.ExecuteReader())
@@ -1373,7 +1388,22 @@ namespace PrimeraWebApp.Controllers
             using (var conexion = new MySqlConnection(_connectionString))
             {
                 conexion.Open();
-                using (var cmd = new MySqlCommand("UPDATE categ SET nombre=@nombre WHERE id=@id", conexion))
+
+                // Detectar la columna clave de la tabla 'categ' para usar en WHERE
+                var catKey = "id";
+                using (var vc = new MySqlCommand("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='categ'", conexion))
+                using (var vr = vc.ExecuteReader())
+                {
+                    var cols = new List<string>();
+                    while (vr.Read()) cols.Add(vr.GetString(0));
+                    catKey = cols.FirstOrDefault(c => string.Equals(c, "id", System.StringComparison.OrdinalIgnoreCase))
+                             ?? cols.FirstOrDefault(c => c.EndsWith("_id", System.StringComparison.OrdinalIgnoreCase))
+                             ?? cols.FirstOrDefault(c => c.EndsWith("Id"))
+                             ?? cols.FirstOrDefault()
+                             ?? "id";
+                }
+
+                using (var cmd = new MySqlCommand($"UPDATE categ SET nombre=@nombre WHERE `{catKey}`=@id", conexion))
                 {
                     cmd.Parameters.AddWithValue("@nombre", nombre);
                     cmd.Parameters.AddWithValue("@id", id);
@@ -1388,15 +1418,51 @@ namespace PrimeraWebApp.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteCategory(int id)
         {
-            using (var conexion = new MySqlConnection(_connectionString))
+            try
             {
-                conexion.Open();
-                using (var cmd = new MySqlCommand("DELETE FROM categ WHERE id=@id", conexion))
+                using (var conexion = new MySqlConnection(_connectionString))
                 {
-                    cmd.Parameters.AddWithValue("@id", id);
-                    cmd.ExecuteNonQuery();
+                    conexion.Open();
+
+                    // Detectar la columna clave de la tabla 'categ' para usar en WHERE
+                    var catKey = "id";
+                    using (var vc = new MySqlCommand("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='categ'", conexion))
+                    using (var vr = vc.ExecuteReader())
+                    {
+                        var cols = new List<string>();
+                        while (vr.Read()) cols.Add(vr.GetString(0));
+                        catKey = cols.FirstOrDefault(c => string.Equals(c, "id", System.StringComparison.OrdinalIgnoreCase))
+                                 ?? cols.FirstOrDefault(c => c.EndsWith("_id", System.StringComparison.OrdinalIgnoreCase))
+                                 ?? cols.FirstOrDefault(c => c.EndsWith("Id"))
+                                 ?? cols.FirstOrDefault()
+                                 ?? "id";
+                    }
+
+                    using (var cmd = new MySqlCommand($"DELETE FROM categ WHERE `{catKey}`=@id", conexion))
+                    {
+                        cmd.Parameters.AddWithValue("@id", id);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                TempData["CategoryMessage"] = "Categoría eliminada correctamente.";
+            }
+            catch (MySql.Data.MySqlClient.MySqlException ex)
+            {
+                // Código 1451: Cannot delete or update a parent row: a foreign key constraint fails
+                if (ex.Number == 1451)
+                {
+                    TempData["CategoryError"] = "No se puede eliminar la categoría porque está siendo utilizada por productos u otros registros relacionados.";
+                }
+                else
+                {
+                    TempData["CategoryError"] = "Error al eliminar la categoría: " + ex.Message;
                 }
             }
+            catch (System.Exception ex)
+            {
+                TempData["CategoryError"] = "Error al eliminar la categoría: " + ex.Message;
+            }
+
             return RedirectToAction("Create");
         }
 
